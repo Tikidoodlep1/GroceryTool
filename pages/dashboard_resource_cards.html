@@ -1,0 +1,224 @@
+<section id="spending-tracker-cards">
+	<h2>Spending Trackers</h2>
+	<div class="flex" id="create-spending-tracker-container">
+		<button id="create-spending-tracker">New Spending Tracker</button>
+	</div>
+	<!-- <div id="card-table">
+		<div class="resource-card">
+			<h3>Target</h3>
+			<div class="flex spending-container">
+				<ul id='spending-entry-header'>
+					<li>Date</li>
+					<li>Username</li>
+					<li>Description</li>
+					<li>Amount</li>
+				</ul>
+				<ul class='spending-entry'>
+					<li>01/17/2020</li>
+					<li>Sora</li>
+					<li>Kitty</li>
+					<li>200.00</li>
+				</ul>
+			</div>
+		</div>
+	</div> -->
+</section>
+<section id="shopping-list-cards">
+	<h2>Shopping Lists</h2>
+</section>
+
+<script>
+	getSpendingTrackerPreview();
+
+	document.querySelector("#create-spending-tracker").addEventListener('click', (e) => {
+		document.querySelector("#create-spending-tracker-dialog").showModal();
+	});
+
+	async function getSpendingTrackerPreview() {
+		if(UserSessionObj !== null) {
+			// var user = UserFromJson(sessionStorage.getItem("user"));
+			var trackersPromise;
+			if(!sessionStorage.getItem("trackers")) {
+				trackersPromise = await getContent("/programs/ShopMate/api/routing/routing_global.php?request=trackers/list/" + UserSessionObj.getId + "/preview", false, "/programs/ShopMate/pages/dashboard.php");
+
+				for(var i = 0; i < trackersPromise.length; i++) {
+					trackersPromise[i] = trackersPromise[i].ToJson;
+				}
+				sessionStorage.setItem("trackers", "[" + trackersPromise.toString() + "]");
+				createSpendingTrackerPreview(sessionStorage.getItem("trackers"));
+			}else {
+				createSpendingTrackerPreview(sessionStorage.getItem("trackers"));
+			}
+		}
+	}
+
+	function createSpendingTrackerPreview(trackers) {
+		var trackerArr = [];		
+		for(var t of JSON.parse(trackers)) {
+			trackerArr.push(SpendingTrackerFromJson(t));
+		}
+
+		var rootEle = document.createElement("div");
+		rootEle.id = "card-table";
+		for(var tracker of trackerArr) {
+			var card = document.createElement("div");
+			card.classList.add("resource-card");
+			card.dataset.trackerId = tracker.getId;
+
+			var cardTitle = document.createElement("h3");
+			cardTitle.textContent = tracker.getName;
+			card.appendChild(cardTitle);
+
+			var preview = document.createElement("div");
+			preview.classList.add("flex");
+			preview.classList.add("spending-container");
+
+			var previewTableHeader = document.createElement("ul");
+			previewTableHeader.id = "spending-entry-header";
+
+			var dateHeader = document.createElement("li");
+			dateHeader.appendChild(document.createTextNode("Date"));
+			previewTableHeader.appendChild(dateHeader);
+
+			var usernameHeader = document.createElement("li");
+			usernameHeader.textContent = "Username";
+			previewTableHeader.appendChild(usernameHeader);
+
+			var descHeader = document.createElement("li");
+			descHeader.textContent = "Description";
+			previewTableHeader.appendChild(descHeader);
+
+			var amountHeader = document.createElement("li");
+			amountHeader.textContent = "Amount";
+			previewTableHeader.appendChild(amountHeader);
+
+			preview.appendChild(previewTableHeader);
+
+			for(var entry of tracker.getEntries) {
+				var previewTableRow = document.createElement("ul");
+				previewTableRow.classList.add("spending-entry");
+
+				var dateBody = document.createElement("li");
+				dateBody.textContent = entry.getDate;
+				previewTableRow.appendChild(dateBody);
+
+				var usernameBody = document.createElement("li");
+				usernameBody.textContent = entry.getUserId;
+				previewTableRow.appendChild(usernameBody);
+
+				var descBody = document.createElement("li");
+				descBody.textContent = entry.getDesc;
+				previewTableRow.appendChild(descBody);
+
+				var amountBody = document.createElement("li");
+				amountBody.textContent = entry.getAmount;
+				previewTableRow.appendChild(amountBody);
+
+				preview.appendChild(previewTableRow);
+			}
+
+			card.appendChild(preview);
+			rootEle.appendChild(card);
+
+			card.addEventListener('click', async function(e) {
+				var cardTarget;
+				if(e.target.classList.contains("resource-card")) {
+					cardTarget = e.target;
+				}else if(e.target.tagName === "H3" || e.target.classList.contains("spending-container")) {
+					cardTarget = e.target.parentElement;
+				}else if(e.target.tagName === "UL") {
+					cardTarget = e.target.parentElement.parentElement;
+				}else if(e.target.tagName === "LI") {
+					cardTarget = e.target.parentElement.parentElement.parentElement;
+				}else {
+					return null;
+				}
+
+				var singleTrackerPromise = await getContentThenRedirect("/programs/ShopMate/api/routing/routing_global.php?request=trackers/view/" + cardTarget.dataset.trackerId, "/programs/ShopMate/pages/spending_tracker.php"); //getContentThenRedirect(path, refresh, endpoint = null, data = null)
+				if(singleTrackerPromise.length > 0) {
+					sessionStorage.setItem("currentTracker", singleTrackerPromise[0].ToJson);
+				}else {
+					console.error("Couldn't get spending tracker with id " + cardTarget.dataset.trackerId);
+				}
+			})
+		}
+		document.querySelector("#spending-tracker-cards").appendChild(rootEle);
+	}
+	
+</script>
+
+<style>
+	#create-spending-tracker-container {
+		justify-content: right;
+	}
+
+	#card-table {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, fit-content(30vw));
+		grid-template-rows: repeat(auto-fit, fit-content(30vw));
+
+		gap: 1em;
+		padding: 1em;
+	}
+
+	.resource-card {
+		padding: 1em;
+		border-radius: 16px;
+		background-color: var(--text);
+
+		cursor: pointer;
+
+		box-shadow: 8px 8px 8px rgba(0, 0, 0, 0.3);
+	}
+
+	.spending-container {
+		width: 100%;
+		margin: auto;
+		border-radius: 16px;
+		
+		font-size: 14pt;
+
+		background-color: var(--table-head-bg);
+
+		flex-direction: column;
+		flex-wrap: nowrap;
+	}
+
+	#spending-entry-header {
+		display: grid;
+		grid-template-columns: 15% 20% 45% 17%;
+		grid-template-rows: 100%;
+
+		font-weight: bold;
+
+		color: var(--table-head-text);
+		margin: 1em 0em;
+	}
+
+	.spending-entry {
+		display: grid;
+		grid-template-columns: 15% 20% 45% 17%;
+		grid-template-rows: 100%;
+
+		margin: 0%;
+		padding: 0.2em 0.1em;
+	}
+
+	.spending-container .spending-entry:nth-child(odd) {
+		background-color: var(--table-row-bg);
+	}
+
+	.spending-container .spending-entry:nth-child(even) {
+		background-color: var(--table-row-alt-bg);
+	}
+
+	.spending-container .spending-entry:last-child {
+		border-radius: 0px 0px 16px 16px;
+	}
+
+	.spending-container ul {
+		list-style-type: none;
+		padding-inline-start: 0%;
+		text-align: center;
+	}
+</style>

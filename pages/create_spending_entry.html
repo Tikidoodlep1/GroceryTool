@@ -1,0 +1,161 @@
+<dialog id="create-spending-entry-dialog">
+	<form id="create-spending-entry-form" method="dialog" autocomplete="on">
+		<h3 class="center">Create Entry</h3>
+
+		<label for="entry-amount">Amount</label>
+		<input class="textinput" type="number" step="0.01" name="entry-amount" id="entry-amount" required autofocus>
+
+		<label for="entry-desc">Description</label>
+		<textarea class="textinput" name="entry-desc" id="entry-desc"></textarea>
+
+		<button id="finish-create-entry" name="create-spending-entry" type="submit" value="create" formmethod="dialog">Finish</button>
+		<button id="cancel-create-entry" name="cancel-spending-entry" type="submit" value="cancel" formmethod="dialog" formnovalidate>Cancel</button>
+	</form>
+</dialog>
+
+<script>
+	document.querySelector("#finish-create-entry").addEventListener("click", async function(e) {
+		var response = await postContent("/programs/ShopMate/api/routing/routing_global.php", {request: "trackers/register/entries", user_id: UserSessionObj.getId, tracker_id: "shdjf-jhsjdkfh-hsdf-hsjdfsf", amount: document.querySelector("#entry-amount").value, desc: document.querySelector("#entry-desc").value}, "/programs/ShopMate/pages/spending_tracker.php");
+		console.log(response);
+	});
+
+	var tael = document.querySelector("#entry-desc");
+
+	var checkFields = function(e) {
+		if(e.target.value) {
+			document.querySelector("label[for=" + e.target.id + "]").classList.add("contains-text");
+		}else {
+			document.querySelector("label[for=" + e.target.id + "]").classList.remove("contains-text");
+		}
+	}
+
+	tael.addEventListener("blur", function(e) {checkFields(e);});
+</script>
+
+<style>
+	::backdrop {
+		backdrop-filter: blur(5px);
+	}
+
+	dialog[open] {
+		display: inline-flex;
+		flex-direction: column;
+	}
+
+	#create-spending-entry-dialog {
+		background: transparent;
+		border: none;
+		width: 60vw;
+		height: auto;
+	}
+
+	#create-spending-entry-form {
+		background-color: var(--banner-bg);
+
+		display: flex;
+		flex-direction: column;
+		flex-wrap: nowrap;
+		justify-content: flex-start;
+
+		padding: 5%;
+		border-radius: 16px;
+		margin: auto 10%;
+	}
+
+	#create-spending-entry-form input {
+		background-color: white;
+		border: 2px solid var(--text);
+		border-radius: 8px;
+		transition: border 0.2s;
+		font-size: 1.1rem;
+		text-indent: 2%;
+		margin-bottom: 5%;
+		line-height: 3rem;
+	}
+
+	#create-spending-entry-form textarea {
+		background-color: white;
+		border: 2px solid var(--text);
+		border-radius: 8px;
+		transition: border 0.2s;
+		font-size: 1.1rem;
+		text-indent: 2%;
+		margin-bottom: 5%;
+		line-height: 3rem;
+	}
+
+	#create-spending-entry-form input:focus {
+		border: 4px solid var(--button);
+	}
+
+	#create-spending-entry-form textarea:focus {
+		border: 4px solid var(--button);
+	}
+
+	#create-spending-entry-form label {
+		font-size: 1rem;
+		color: var(--heading-sub);
+		pointer-events: none;
+		transform: translateY(1.6rem);
+		text-align: left;
+		padding: 0% 2%;
+		transition: transform 0.2s ease, font-size 0.2s ease;
+		line-height: 0px;
+	}
+
+	#create-spending-entry-form label:has(+input:focus),
+	#create-spending-entry-form label:has(+input:valid) {
+		font-size: 0.8em;
+		transform: translateY(0.8em);
+	}
+
+	#create-spending-entry-form label:has(+textarea:focus) {
+		font-size: 0.8em;
+		transform: translateY(0.8em);
+	}
+
+/* Can use :not(:black) instead of this. */
+	#create-spending-entry-form .contains-text {
+		font-size: 0.8em;
+		transform: translateY(0.8em);
+	}
+
+	#create-spending-entry-form button {
+		background-color: var(--button);
+		color: white;
+		margin: 0% 20%;
+		padding: 2% 0%;
+		border-radius: 8px;
+		border: 2px solid var(--heading-sub);
+		transition: background-color 0.5s;
+		font-size: 1rem;
+		font-weight: 200;
+		font-family: "Poppins", sans-serif;
+	}
+
+	#create-spending-entry-form button:hover {
+		background-color: var(--button-hover);
+	}
+
+	@media(max-aspect-ratio: 4/5) {
+		#create-spending-entry-dialog {
+			width: 90vw;
+		}
+
+		#create-spending-entry-form button {
+			font-size: 1.5em;
+		}
+
+		#create-spending-entry-form label {
+			font-size: 1.5em;
+		}
+
+		#create-spending-entry-form input {
+			font-size: 1.5rem;
+		}
+
+		#create-spending-entry-form textarea {
+			font-size: 1.5rem;
+		}
+	}
+</style>

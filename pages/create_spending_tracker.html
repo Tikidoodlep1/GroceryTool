@@ -1,0 +1,118 @@
+<dialog id="create-spending-tracker-dialog">
+	<form id="create-spending-tracker-form" method="dialog" autocomplete="on">
+		<h3 class="center">New Spending Tracker</h3>
+
+		<label for="tracker-name">Spending Tracker Name</label>
+		<input class="textinput" type="text" name="tracker-name" id="tracker-name" required autofocus>
+
+		<!-- Maybe add a button to add friends to the tracker on creation using button + ul + js -->
+
+		<button id="finish-create-tracker" name="create-spending-tracker" type="submit" value="create" formmethod="dialog">Finish</button>
+		<button id="cancel-create-tracker" name="cancel-spending-tracker" type="submit" value="cancel" formmethod="dialog" formnovalidate>Cancel</button>
+	</form>
+</dialog>
+
+<script>
+	document.querySelector("#finish-create-tracker").addEventListener("click", async function(e) {
+		var response = await postContent("/programs/ShopMate/api/routing/routing_global.php", {request: "trackers/register", user_id: UserSessionObj.getId, tracker_name: document.querySelector("#tracker-name").value}, "/programs/ShopMate/pages/spending_tracker.php");
+		sessionStorage.setItem("currentTracker", response.ToJson);
+	});
+</script>
+
+<style>
+	::backdrop {
+		backdrop-filter: blur(5px);
+	}
+
+	dialog[open] {
+		display: inline-flex;
+		flex-direction: column;
+	}
+
+	#create-spending-tracker-dialog {
+		background: transparent;
+		border: none;
+		width: 60vw;
+		height: auto;
+	}
+
+	#create-spending-tracker-form {
+		background-color: var(--banner-bg);
+
+		display: flex;
+		flex-direction: column;
+		flex-wrap: nowrap;
+		justify-content: flex-start;
+
+		padding: 5%;
+		border-radius: 16px;
+		margin: auto;
+	}
+
+	#create-spending-tracker-form input {
+		background-color: white;
+		border: 2px solid var(--text);
+		border-radius: 8px;
+		transition: border 0.2s;
+		font-size: 1.1rem;
+		text-indent: 2%;
+		margin-bottom: 5%;
+		line-height: 3rem;
+	}
+
+	#create-spending-tracker-form input:focus {
+		border: 4px solid var(--button);
+	}
+
+	#create-spending-tracker-form label {
+		font-size: 1rem;
+		color: var(--heading-sub);
+		pointer-events: none;
+		transform: translateY(1.6rem);
+		text-align: left;
+		padding: 0% 2%;
+		transition: transform 0.2s ease, font-size 0.2s ease;
+		line-height: 0px;
+	}
+
+	#create-spending-tracker-form label:has(+input:focus),
+	#create-spending-tracker-form label:has(+input:valid) {
+		font-size: 0.8em;
+		transform: translateY(0.8em);
+	}
+
+	#create-spending-tracker-form button {
+		background-color: var(--button);
+		color: white;
+		margin: 0% 20%;
+		padding: 2% 0%;
+		border-radius: 8px;
+		border: 2px solid var(--heading-sub);
+		transition: background-color 0.5s;
+		font-size: 1rem;
+		font-weight: 200;
+		font-family: "Poppins", sans-serif;
+	}
+
+	#create-spending-tracker-form button:hover {
+		background-color: var(--button-hover);
+	}
+
+	@media(max-aspect-ratio: 4/5) {
+		#create-spending-tracker-dialog {
+			width: 90vw;
+		}
+
+		#create-spending-tracker-form button {
+			font-size: 1.5em;
+		}
+
+		#create-spending-tracker-form label {
+			font-size: 1.5em;
+		}
+
+		#create-spending-tracker-form input {
+			font-size: 1.5rem;
+		}
+	}
+</style>

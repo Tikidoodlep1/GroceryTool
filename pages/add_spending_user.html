@@ -1,0 +1,115 @@
+<dialog id="add-spending-user-dialog">
+	<form id="add-spending-user-form" method="dialog" autocomplete="on">
+		<h3 class="center">Add User to Spending Tracker</h3>
+
+		<label for="recipient-email">Enter the email of the person you wish to invite</label>
+		<input class="textinput" type="email" name="recipient-email" id="recipient-email" required autofocus>
+
+		<button id="finish-add-spending-user" name="confirm-add-spending-user" type="submit" value="create" formmethod="dialog">Finish</button>
+		<button id="cancel-add-spending-user" name="cancel-add-spending-user" type="submit" value="cancel" formmethod="dialog" formnovalidate>Cancel</button>
+	</form>
+</dialog>
+
+<script>
+	document.querySelector("#finish-add-spending-user").addEventListener("click", async function(e) {
+		var response = await postContent("/programs/ShopMate/api/routing/routing_global.php", {request: "invites/register/" + UserSessionObj.getId, recipient_email: document.querySelector("#recipient-email").value, tracker_id: "shdjf-jhsjdkfh-hsdf-hsjdfsf"}, "/programs/ShopMate/pages/spending_tracker.php");
+	});
+</script>
+
+<style>
+	::backdrop {
+		backdrop-filter: blur(5px);
+	}
+
+	dialog[open] {
+		display: inline-flex;
+		flex-direction: column;
+	}
+
+	#add-spending-user-dialog {
+		background: transparent;
+		border: none;
+		width: 60vw;
+		height: auto;
+	}
+
+	#add-spending-user-form {
+		background-color: var(--banner-bg);
+
+		display: flex;
+		flex-direction: column;
+		flex-wrap: nowrap;
+		justify-content: flex-start;
+
+		padding: 5%;
+		border-radius: 16px;
+		margin: auto 10%;
+	}
+
+	#add-spending-user-form input {
+		background-color: white;
+		border: 2px solid var(--text);
+		border-radius: 8px;
+		transition: border 0.2s;
+		font-size: 1.1rem;
+		text-indent: 2%;
+		margin-bottom: 5%;
+		line-height: 3rem;
+	}
+
+	#add-spending-user-form input:focus {
+		border: 4px solid var(--button);
+	}
+
+	#add-spending-user-form label {
+		font-size: 1rem;
+		color: var(--heading-sub);
+		pointer-events: none;
+		transform: translateY(1.6rem);
+		text-align: left;
+		padding: 0% 2%;
+		transition: transform 0.2s ease, font-size 0.2s ease;
+		line-height: 0px;
+	}
+
+	#add-spending-user-form label:has(+input:focus),
+	#add-spending-user-form label:has(+input:valid) {
+		font-size: 0.8em;
+		transform: translateY(0.8em);
+	}
+
+	#add-spending-user-form button {
+		background-color: var(--button);
+		color: white;
+		margin: 0% 20%;
+		padding: 2% 0%;
+		border-radius: 8px;
+		border: 2px solid var(--heading-sub);
+		transition: background-color 0.5s;
+		font-size: 1rem;
+		font-weight: 200;
+		font-family: "Poppins", sans-serif;
+	}
+
+	#add-spending-user-form button:hover {
+		background-color: var(--button-hover);
+	}
+
+	@media(max-aspect-ratio: 4/5) {
+		#add-spending-user-dialog {
+			width: 90vw;
+		}
+
+		#add-spending-user-form button {
+			font-size: 1.5em;
+		}
+
+		#add-spending-user-form label {
+			font-size: 1.5em;
+		}
+
+		#add-spending-user-form input {
+			font-size: 1.5rem;
+		}
+	}
+</style>

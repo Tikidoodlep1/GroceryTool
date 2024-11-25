@@ -1,0 +1,229 @@
+<script>
+
+	getDashboardInvites();
+
+	async function getDashboardInvites() {
+		var userInvites = [];
+		if(sessionStorage.getItem("userInvites") == null) {
+			var invitesPromise = await getContent("/programs/ShopMate/api/routing/routing_global.php?request=invites/view/" + UserSessionObj.getId, false, "/programs/ShopMate/pages/dashboard.php");
+			console.log("===================RECIEVED INVITES===================");
+			console.log(invitesPromise);
+
+			var associatedUsers = await getContent("/programs/ShopMate/api/routing/routing_global.php?request=users/view/invites/" + UserSessionObj.getId, false, "/programs/ShopMate/pages/dashboard.php");
+
+			var associatedResources; //Do something here
+
+			for(var i = 0; i < invitesPromise.length; i++) {
+				invitesPromise[i].setSenderUsername = associatedUsers[i].getUsername;
+				userInvites.push(invitesPromise[i]);
+				invitesPromise[i] = invitesPromise[i].ToJson;
+			}
+
+			sessionStorage.setItem("userInvites", "[" + invitesPromise.toString() + "]");
+			console.log("userInvites in sessions storage: " + sessionStorage.getItem("userInvites"));
+		}else {
+			var jsonInvites = JSON.parse(sessionStorage.getItem("userInvites"));
+			for(var i = 0; i < jsonInvites.length; i++) {
+				userInvites.push(InviteFromJson(jsonInvites[i]));
+			}
+		}
+		
+		createDashboardInvitesTable(userInvites);
+	}
+
+	function createDashboardInvitesTable(invites) {
+		// Parent: <div class="invite-table-wrapper">
+		// No Invites: <p class='user-notification'>All caught up!</p>
+		
+		/* Otherwise:
+		<div class="flex" id="invite-table">
+		<ul id="invite-table-header">
+			<li><h4>Username</h4></li>
+			<li><h4>Type</h4></li>
+			<li><h4>Name</h4></li>
+			<li><h4>Actions</h4></li>
+		</ul>
+
+		<?php //for($i = 0; $i < count($invites); $i++) { ?>
+			<ul class="invite-table-row">
+				<li><?php //echo $invites[$i]["username"] ?></li>
+				<li>Spending Tracker</li>
+				<li><?php //echo $invites[$i]["spending_tracker_name"] ?></li>
+				<li>
+					<button name='accept' value= <?php //echo "$i" ?> >Accept</button>
+					<button name='ignore' value= <?php //echo "$i" ?> >Ignore</button>
+				</li>
+			</ul>
+		<?php //} ?>
+
+		</div>
+		*/
+		if(invites.length > 0) {
+			var inviteTableEle = document.createElement("div");
+			inviteTableEle.classList.add("flex");
+			inviteTableEle.id = "invite-table";
+
+			var inviteTableHeader = document.createElement("ul");
+			inviteTableHeader.id = "invite-table-header";
+			inviteTableHeader.innerHTML = "<li><h4>Username</h4></li><li><h4>Type</h4></li><li><h4>Name</h4></li><li><h4>Actions</h4></li>";
+			inviteTableEle.appendChild(inviteTableHeader);
+
+			for(var i = 0; i < invites.length; i++) {
+				console.log(invites[i]);
+				console.log(invites[i].getSenderUsername + ", " + invites[i].getResourceDescription() + ", " + invites[i].getResourceNameOrId());
+				var inviteTableRow = document.createElement("ul");
+				inviteTableRow.classList.add("invite-table-row");
+				inviteTableRow.innerHTML = "<li>" + invites[i].getSenderUsername === "Unknown Sender Username" ? invites[i].getSenderId : invites[i].getSenderUsername + "</li><li>" + invites[i].getResourceDescription() + "</li><li>" + invites[i].getResourceNameOrId() + "</li><li><button name='accept' value=" + invites[i].getId + ">Accept</button><button name='ignore' value=" + invites[i].getId + ">Ignore</button></li>";
+				inviteTableEle.appendChild(inviteTableRow);
+			}
+
+			document.querySelector(".invite-table-wrapper").appendChild(inviteTableEle);
+
+			document.querySelector("#invite-table").addEventListener('click', async function(e) {
+				if(e.target.tagName === "BUTTON") {
+					if(e.target.name === "accept") {
+						var acceptInvitePromise = await postContent("/programs/ShopMate/api/routing/routing_global.php", {request: "invites/accept/" + e.target.value, "recipient_id": UserSessionObj.getId}, "/programs/ShopMate/pages/dashboard.php"); //postContent(path, data, endpoint)
+
+						console.log(acceptInvitePromise);
+
+						e.target.parentElement.parentElement.remove();
+					}else { //Ingore invite
+						var ignoreInvitePromise = await postContent("/programs/ShopMate/api/routing/routing_global.php", {request: "invites/ignore/" + e.target.value, "recipient_id": UserSessionObj.getId}, "/programs/ShopMate/pages/dashboard.php"); //postContent(path, data, endpoint)
+
+						console.log(ignoreInvitePromise);
+
+						e.target.parentElement.parentElement.remove();
+					}
+				}
+			});
+		}else {
+			var invitePEle = document.createElement("p");
+			invitePEle.classList.add("user-notification");
+			invitePEle.textContent = "All caught up!";
+			document.querySelector(".invite-table-wrapper").appendChild(invitePEle);
+		}
+	}
+</script>
+
+<style>
+	#invite-table {
+		width: 100%;
+		height: max-content;
+		margin: auto;
+		
+		font-size: 18pt;
+
+		background-color: var(--table-head-bg);
+		border-radius: 16px;
+
+		flex-direction: column;
+		flex-wrap: nowrap;
+	}
+
+	#invite-table #invite-table-header {
+		display: grid;
+		grid-template-columns: 34% 18% 19% 29%;
+		grid-template-rows: minmax(auto, max-content);
+
+		margin: 0%;
+	}
+
+	#invite-table h4 {
+		font-weight: bold;
+		font-size: 1.5em;
+		color: var(--table-head-text);
+	}
+
+	#invite-table .invite-table-row {
+		display: grid;
+		grid-template-columns: 34% 18% 19% 29%;
+
+		margin: 0%;
+		padding: 0.2em 0.1em;
+	}
+
+	#invite-table .invite-table-row:nth-child(odd) {
+		background-color: var(--table-row-bg);
+	}
+
+	#invite-table .invite-table-row:nth-child(even) {
+		background-color: var(--table-row-alt-bg);
+	}
+
+	#invite-table .invite-table-row:last-child {
+		border-radius: 0px 0px 16px 16px;
+	}
+
+	#invite-table ul {
+		list-style-type: none;
+		padding-inline-start: 0%;
+		text-align: center;
+	}
+
+	#invite-table button {
+		background-color: var(--button);
+		color: white;
+		width: 4.5em;
+		height: 2em;
+
+		border-radius: 8px;
+		border: 1px solid var(--heading-sub);
+		transition: background-color 0.5s, box-shadow 0.3s;
+		box-shadow: 0px 0px 0px rgba(0, 0, 0, 0.0);
+		font-size: 16pt;
+		font-family: "Poppins", sans-serif;
+
+		cursor: pointer;
+	}
+
+	#invite-table button:hover, button:focus {
+		background-color: var(--button-hover);
+		box-shadow: 4px 4px 4px rgba(0, 0, 0, 0.3);
+	}
+
+	#invite-table button:active {
+		background-color: var(--text);
+		box-shadow: 0px 0px 0px rgba(0, 0, 0, 0.0);
+	}
+
+	@media(max-aspect-ratio: 1/1) {
+		#invite-table {
+			flex-direction: row;
+			overflow-x: scroll;
+			overflow-y: clip;
+		}
+
+		#invite-table #invite-table-header {
+			grid-template-columns: max-content;
+			grid-template-rows: 26% 26% 26% auto;
+
+			padding: 0.1em 0.4em;
+		}
+
+		#invite-table .invite-table-row {
+			grid-template-columns: max-content;
+			grid-template-rows: 26% 26% 26% auto;
+
+			padding: 0.1em 0.5em;
+		}
+
+		#invite-table .invite-table-row:last-child {
+			border-radius: 0px 16px 16px 0px;
+		}
+	}
+
+	@media(max-aspect-ratio: 3/5) {
+		#invite-table {
+			font-size: 14pt;
+		}
+
+		#invite-table #invite-table-header {
+			grid-template-columns: 250px;
+
+		}
+
+		#invite-table .invite-table-row {
+			grid-template-columns: 250px;
+		}
+	}
+</style>

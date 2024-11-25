@@ -1,0 +1,125 @@
+:root {
+	--heading: #4CAF50;
+	--heading-sub: #2E3A46;
+	--banner-bg: #D4EED1;
+	--link: #2E3A46;
+	--link-hover: #4CAF50;
+	--purpose-bg: #B5D6B2;
+	--text: #4A4A4A;
+	--button: #5AA897;
+	--button-hover: #4E8E83;
+	--table-head-bg: #3B6D50;
+	--table-head-text: #FFFFFF;
+	--table-row-bg: #EDF7ED;
+	--table-row-alt-bg: #CEE3D8/*DDEEE6*/;
+	--input-error: #FF6B6B;
+}
+
+/* HTML ELEMENTS */
+body {
+	font-family: "Poppins", sans-serif;
+	font-weight: 300;
+	font-style: normal;
+	margin: auto;
+	background-color: var(--purpose-bg);
+}
+
+header {
+	position: sticky;
+	top: 0px;
+}
+
+h1 {
+	font-size: 4.5rem;
+	color: var(--heading);
+	margin-top: 0px;
+}
+
+h2 {
+	font-size: 3rem;
+	color: var(--heading-sub);
+	margin: 0px auto;
+}
+
+h3 {
+	font-size: 2.5rem;
+	color: var(--heading);
+	margin: 0px auto;
+}
+
+h4 {
+	font-size: 2.5rem;
+	color: var(--heading-sub);
+	margin: 0px;
+}
+
+a {
+	color: var(--link);
+	transition: color 0.5s;
+}
+
+a:hover {
+	color: var(--link-hover);
+}
+
+@media(max-aspect-ratio: 3/5) {
+	h1 {
+		font-size: 7.5rem;
+	}
+
+	h2 {
+		font-size: 6rem;
+	}
+}
+
+/* GLOBAL CLASSES */
+.spacearound {
+	padding: 5px;
+}
+
+.relative {
+	position: relative;
+}
+
+.body-wrapper {
+	width: 70%;
+	margin: auto;
+}
+
+.floatleft {
+	float: left;
+}
+
+.center {
+	text-align: center;
+}
+
+.flex {
+	display: flex;
+}
+
+.user-notification {
+	padding-left: 5%;
+	font-size: 18pt;
+	font-weight: 500;
+	font-style: italic;
+	color: var(--text);
+}
+
+.hidden {
+	display: none;
+}
+
+.button {
+	border: 2px solid var(--heading-sub);
+	background-color: var(--button);
+	color: white;
+	font-weight: 400;
+	border-radius: 16px;
+}
+
+@media(max-aspect-ratio: 1/1) {
+	.body-wrapper {
+		width: 90%;
+	}
+}
